@@ -1,0 +1,8 @@
+# env files
+*.env
+*.env.local
+
+# idea files
+.idea
+
+# other
