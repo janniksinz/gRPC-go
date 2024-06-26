@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "github.com/janniksinz/gRPC-go/currency";
+
+// services
+service Currency {
+  rpc GetRate(RateRequest) returns (RateResponse);
+}
+
+// messages
+message RateRequest {
+  string Base = 1;
+  string Destination = 2;
+}
+
+message RateResponse {
+  string Rate = 1;
+}
