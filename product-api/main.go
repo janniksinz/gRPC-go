@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"gRPC-go/product-api/handlers"
+	"github.com/gorilla/mux"
+	"github.com/nicholasjackson/env"
 	"log"
 	"net/http"
 	"os"
@@ -10,17 +12,32 @@ import (
 	"time"
 )
 
-//var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server.")
+var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for the server.")
 
 func main() {
-
 	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
 
+	// create the handlers
 	ph := handlers.NewProducts(l)
 
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
-	sm.Handle("/products/", ph)
+	// create a new serve mux and register the handlers
+	sm := mux.NewRouter()
+
+	// GET
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", ph.GetProducts)
+
+	// PUT
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProducts)
+	putRouter.Use(ph.MiddlewareValidateProduct)
+
+	// POST
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", ph.AddProduct)
+	postRouter.Use(ph.MiddlewareValidateProduct)
+
+	//sm.Handle("/products", ph)
 
 	s := http.Server{
 		Addr:         ":9090",
@@ -50,5 +67,8 @@ func main() {
 	log.Printf("Got signal: %v, exiting", sig)
 
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(ctx)
+	err := s.Shutdown(ctx)
+	if err != nil {
+		log.Printf("Error shutting down server: %s\n", err)
+	}
 }
