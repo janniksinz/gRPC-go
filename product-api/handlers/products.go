@@ -24,7 +24,7 @@ func NewProducts(l *log.Logger) *Products {
 //   - POST /
 //   - PUT /{id}	*/
 
-// getProducts returns the products from the data store
+// GetProducts returns the products from the data store
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET Products")
 
@@ -46,9 +46,10 @@ func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(&prod)
 }
 
-func (p Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT Product")
 
+	// parse vars
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -71,7 +72,7 @@ func (p Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 
 type KeyProduct struct{}
 
-func (p Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
+func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		prod := data.Product{}
 
